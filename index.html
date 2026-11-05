@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f2a43">
+  <meta name="color-scheme" content="light dark">
+  <title>MSC-69</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+
+  <style>
+    :root {
+      /* ปรับค่านี้เพื่อซ่อนแบนเนอร์ Google Apps Script (ความสูงประมาณ 40px)
+         ถ้าไม่มีแบนเนอร์แสดง ให้ตั้งเป็น 0px */
+      --gas-banner-offset: 40px;
+
+      --bg: #f4f7fa;
+      --fg: #0f2a43;
+      --muted: #5b7186;
+      --track: #d6e0ea;
+      --accent: #1f6fb2;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1622;
+        --fg: #e6eef6;
+        --muted: #8aa1b6;
+        --track: #1e3248;
+        --accent: #5aa9e6;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;            /* ไม่มี Scrollbar */
+      background: var(--bg);
+      overscroll-behavior: none;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ตัวครอบ iFrame: เต็มจอ ไม่มีขอบ และตัดแบนเนอร์ด้านบนออก */
+    #app {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    #gas-frame {
+      position: absolute;
+      left: 0;
+      top: calc(var(--gas-banner-offset) * -1);
+      width: 100%;
+      height: calc(100% + var(--gas-banner-offset));
+      border: 0;
+      margin: 0;
+      padding: 0;
+      display: block;
+      background: transparent;
+      opacity: 0;
+      transition: opacity .5s ease;
+    }
+    #gas-frame.ready { opacity: 1; }
+
+    /* Loading screen */
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      padding:
+        env(safe-area-inset-top, 0px)
+        env(safe-area-inset-right, 0px)
+        env(safe-area-inset-bottom, 0px)
+        env(safe-area-inset-left, 0px);
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Sarabun", "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+      transition: opacity .6s ease, visibility .6s ease;
+    }
+    #loader.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .code {
+      font-size: clamp(2rem, 8vw, 3.25rem);
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .bar {
+      width: min(220px, 56vw);
+      height: 4px;
+      border-radius: 4px;
+      background: var(--track);
+      overflow: hidden;
+    }
+    .bar::before {
+      content: "";
+      display: block;
+      width: 40%;
+      height: 100%;
+      border-radius: 4px;
+      background: var(--accent);
+      animation: slide 1.1s ease-in-out infinite;
+    }
+    .text { font-size: .95rem; color: var(--muted); }
+
+    @keyframes slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(250%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bar::before { animation-duration: 3s; }
+      #gas-frame, #loader { transition-duration: .01s; }
+    }
+
+    noscript {
+      position: fixed; inset: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg); color: var(--fg);
+      font-family: system-ui, sans-serif; text-align: center; padding: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loader" role="status" aria-live="polite">
+    <div class="code">MSC-69</div>
+    <div class="bar" aria-hidden="true"></div>
+    <div class="text">กำลังโหลด…</div>
+  </div>
+
+  <div id="app">
+    <iframe
+      id="gas-frame"
+      title="MSC-69"
+      src="https://script.google.com/a/macros/nu.ac.th/s/AKfycbw9pQWO1spcx2O39LLUA4p1WeO1wx8JTVcPK7_7kxZ-Ped3RnDmCp7aNcAUnzEAx3Lbow/exec"
+      allow="fullscreen"
+      allowfullscreen
+      scrolling="no"
+      frameborder="0"
+      referrerpolicy="origin"
+    ></iframe>
+  </div>
+
+  <noscript>กรุณาเปิดใช้งาน JavaScript เพื่อใช้งานเว็บแอปนี้</noscript>
+
+  <script>
+    (function () {
+      var frame  = document.getElementById('gas-frame');
+      var loader = document.getElementById('loader');
+      var done = false;
+
+      function finish() {
+        if (done) return;
+        done = true;
+        frame.classList.add('ready');
+        loader.classList.add('hide');
+        setTimeout(function () {
+          if (loader.parentNode) loader.parentNode.removeChild(loader);
+        }, 800);
+      }
+
+      frame.addEventListener('load', function () {
+        // หน่วงเล็กน้อยให้ UI ภายในแอปวาดเสร็จก่อนเฟดออก
+        setTimeout(finish, 250);
+      });
+
+      // กันค้าง: ถ้าโหลดนานเกิน 15 วินาที ให้เอา Loading ออก
+      setTimeout(finish, 15000);
+
+      // กัน iOS Safari เด้ง/ซูมจากการดับเบิลแท็ป
+      document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+    })();
+  </script>
+</body>
+</html>
